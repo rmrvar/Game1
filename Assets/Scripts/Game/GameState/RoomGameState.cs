@@ -1,0 +1,220 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Game.Character;
+using Game.Common;
+using Game.Misc;
+using Game.RoomSystem;
+using Game.TurnSystem;
+using Game.Ui;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+using UnityEngine;
+using UnityEngine.Tilemaps;
+using Util.StateMachine;
+using Util.TurnSystem;
+
+namespace Game.GameState
+{
+    public class RoomGameState : MonoSingletonState<EGameState, RoomGameState>
+    {
+        [SerializeField] 
+        private PlayerCharacter _playerPrefab;
+
+        [SerializeField]
+        private Vector3 _camPos1;
+        [SerializeField]
+        private Vector3 _camPos2;
+        [SerializeField]
+        private Camera _camera;
+        
+        [SerializeField]
+        private Tilemap _botTilemap1;
+        [SerializeField] 
+        private Tilemap _botTilemap2;
+        [SerializeField]
+        private Tilemap _topTilemap;
+
+        [SerializeField]
+        private Gate _topGate;
+        [SerializeField] 
+        private Gate _botGate;
+
+        [SerializeField] 
+        private HealthUi _healthUi;
+        
+        public override void OnEnter()
+        {
+            Debug.Log("RoomGameState OnEnter");
+            Room.Instance.SetTilemap(_botTilemap1);
+
+            _camera.transform.position = _camPos1;
+            
+            CharacterManager.Instance.OnEnemyStartedAction +=
+                ((WaitForEnemiesTurnTask)_playerTasks[0]).OnEnemyStartedAction;
+            CharacterManager.Instance.OnEnemyEndedAction += 
+                ((WaitForEnemiesTurnTask)_playerTasks[0]).OnEnemyEndedAction;
+            CharacterManager.Instance.OnEnemyKilled += OnEnemyKilled;
+            CharacterManager.Instance.OnPlayerKilled += OnPlayerKilled;
+
+            _turnManager = new TurnManager<Character.Character>(this);
+            _turnManager.OnTurnStarted += OnTurnStarted;
+
+            _player = CharacterManager.Instance.SpawnPlayer(_turnManager);
+            _turnManager.AddToken(_player);
+            
+            _turnManager.Run();
+            
+            _healthUi.Health = _player.Health;
+        }
+
+        public override void OnExit()
+        {
+            Debug.Log("RoomGameState OnExit");
+            CharacterManager.Instance.OnEnemyStartedAction -=
+                ((WaitForEnemiesTurnTask)_playerTasks[0]).OnEnemyStartedAction;
+            CharacterManager.Instance.OnEnemyEndedAction -= 
+                ((WaitForEnemiesTurnTask)_playerTasks[0]).OnEnemyEndedAction;
+            CharacterManager.Instance.OnEnemyKilled -= OnEnemyKilled;
+            CharacterManager.Instance.OnPlayerKilled -= OnPlayerKilled;
+            _turnManager.OnTurnStarted -= OnTurnStarted;
+            _turnManager.ClearTokens();
+            _turnManager.Stop();
+        }
+
+        private void OnEnemyKilled(EnemyCharacter enemy)
+        {
+            if (!CharacterManager.Instance.Enemies.Any())
+            {
+                _topGate.Lower();   
+            }
+        }
+
+        private void OnPlayerKilled(PlayerCharacter player)
+        {
+#if UNITY_EDITOR
+            EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
+
+        public int RoomTransitionThresholdY => (int) _topGate.transform.position.y;
+        
+        public IEnumerator IE_DoRoomTransition()
+        {
+            ++_level;
+            
+            SpawnEnemies();
+            
+            // Play animations.
+            int completionCounter = 0;
+            _player.RoomEntity.Move(EDirection.UP, 0.5F, () => ++completionCounter);   
+            StartCoroutine(LerpAnimation.IE_MoveTo(
+                _camera.transform, 
+                _camPos2, 
+                0.35F, 
+                () => ++completionCounter)
+              );
+            yield return new WaitUntil(() => completionCounter == 2);
+            
+            if (Room.Instance.Tilemap == _botTilemap1)
+            {
+                SetBottomTilemap(useBotTilemap1: false);
+            }
+            
+            // Teleport player & enemies down.
+            _player.RoomEntity.Position = new Vector2Int(_player.RoomEntity.Position.x, _player.RoomEntity.Position.y - 12);
+            foreach (var enemy in CharacterManager.Instance.Enemies)
+            {
+                enemy.RoomEntity.Position = new Vector2Int(enemy.RoomEntity.Position.x, enemy.RoomEntity.Position.y - 12);
+            }
+            
+            // Teleport camera back down.
+            _camera.transform.position = _camPos1;
+            
+            // Trap the player.
+            _topGate.Raise();
+            _botGate.Raise();
+            
+            // This is usually calculated when the turns end (which was in the top room).
+            Dijkstra.SetDestination(_player.RoomEntity.Position);
+            
+            _turnManager.Stop();
+            _turnManager.Run();
+        }
+
+        private int GetNumOfEnemies()
+        {
+            switch (_level)
+            {
+                case 1:
+                case 2: 
+                    return Random.Range(4, 5);
+                case 3: 
+                case 4: 
+                    return Random.Range(5, 6);
+                case 5: 
+                case 6: 
+                    return Random.Range(7, 8);
+                case 7: 
+                case 8: 
+                    return Random.Range(9, 10);
+                default: 
+                    return Random.Range(11, 15);
+            }
+        }
+        
+        private void SpawnEnemies()
+        {
+            var enemies = new List<EnemyCharacter>();
+            for (int i = 0; i < GetNumOfEnemies(); ++i)
+            {
+                var enemy = CharacterManager.Instance.SpawnEnemy(_turnManager);
+                enemies.Add(enemy);    
+            }
+            foreach (var enemy in enemies)
+            {
+                _turnManager.AddToken(enemy);
+            }
+        }
+
+        private void SetBottomTilemap(bool useBotTilemap1)
+        {
+            _botTilemap1.gameObject.SetActive(useBotTilemap1);
+            _botTilemap2.gameObject.SetActive(!useBotTilemap1);
+            Room.Instance.SetTilemap(useBotTilemap1 ? _botTilemap1 : _botTilemap2);
+        }
+
+        private void OnTurnStarted(TurnContext<Character.Character> context)
+        {
+            if (context.Token is PlayerCharacter)
+            {
+                _turnManager.SetTasks(_playerTasks);
+            } else 
+            if (context.Token is EnemyCharacter)
+            {
+                _turnManager.SetTasks(_enemyTasks);    
+            }
+            else
+            {
+                Debug.LogError("Invalid token in TurnContext!");
+            }
+        }
+        
+        private readonly ITurnTask<Character.Character>[] _playerTasks = new ITurnTask<Character.Character>[]
+        {
+            new WaitForEnemiesTurnTask(),
+            new TurnTask(),
+        };
+        private readonly ITurnTask<Character.Character>[] _enemyTasks = new ITurnTask<Character.Character>[]
+        {
+            new TurnTask(), 
+        };
+
+        private TurnManager<Character.Character> _turnManager;
+        private PlayerCharacter _player;
+        private int _level;
+    }
+}
