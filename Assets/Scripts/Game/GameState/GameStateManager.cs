@@ -1,6 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Util;
-using Util.StateMachine;
+using static Game.Common.Constants.GameState;
 
 namespace Game.GameState
 {
@@ -8,20 +9,20 @@ namespace Game.GameState
     {
         [SerializeField] private MenuGameState _menuGameState;
         [SerializeField] private RoomGameState _roomGameState;
-
+        
+        public Util.State.GraphInstance StateMachine { get; private set; }
+        
         protected override void Awake()
         {
             base.Awake();
-            _stateMachine = new StateMachine<EGameState>();
-            _stateMachine.AddState(_menuGameState);
-            _stateMachine.AddState(_roomGameState);
+            var stateGraph = Util.State.Graph.Builder
+                .Start()
+                .AddNode(MENU_STATE_KEY, _menuGameState)
+                .AddNode(ROOM_STATE_KEY, _roomGameState)
+                .AddEdge(MENU_STATE_KEY, ROOM_STATE_KEY)
+                .AddEdge(ROOM_STATE_KEY, MENU_STATE_KEY)
+                .Finish();
+            StateMachine = new Util.State.GraphInstance(stateGraph);
         }
-
-        public void SetGameState(EGameState state)
-        {
-            _stateMachine.SetState(state);
-        }
-
-        private StateMachine<EGameState> _stateMachine;
     }
 }

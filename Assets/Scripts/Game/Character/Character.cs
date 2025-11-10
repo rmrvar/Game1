@@ -26,7 +26,6 @@ namespace Game.Character
         
         protected virtual void Kill()
         {
-            HideAttackIndicators();
             TurnManager.RemToken(this);
             Destroy(gameObject);
         }
@@ -63,6 +62,7 @@ namespace Game.Character
         private void OnDisable()
         {
             Health.OnDied -= Kill;
+            HideAttackIndicators();
         }
         
         protected IEnumerable<Transform> AttackIndicators { get; private set; }

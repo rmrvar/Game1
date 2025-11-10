@@ -32,17 +32,19 @@ namespace Game.Ui
         
         private void CleanUpOld()
         {
-            if (_health == null)
+            if (_health != null)
             {
-                return;
+                _health.OnHurt -= OnHealthChanged;
+                _health.OnHealed -= OnHealthChanged;
             }
-            _health.OnHurt -= OnHealthChanged;
-            _health.OnHealed -= OnHealthChanged;
-            foreach (var heart in _hearts)
+            if (_hearts.Count > 0)
             {
-                Destroy(heart.gameObject);
+                foreach (var heart in _hearts)
+                {
+                    Destroy(heart.gameObject);
+                }
+                _hearts.Clear();   
             }
-            _hearts.Clear();
         }
 
         private void SetUpNew()

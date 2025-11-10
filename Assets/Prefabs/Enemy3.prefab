@@ -165,4 +165,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1287d89872a2d684889895c400c964df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MaxHearts>k__BackingField: 3
+  <MaxHearts>k__BackingField: 2

@@ -23,7 +23,7 @@ namespace Game.TurnSystem
         {
             --_count;
         }
-        
+
         private int _count = 0;
     }
 }

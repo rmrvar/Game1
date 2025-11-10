@@ -71,6 +71,20 @@ namespace Game.Character
             OnPlayerKilled?.Invoke(Player);
         }
 
+        public void ClearAll()
+        {
+            foreach (var enemy in _enemies)
+            {
+                Destroy(enemy.gameObject);
+            }
+            _enemies.Clear();
+            if (Player != null)
+            {
+                Destroy(Player.gameObject);
+                Player = null;
+            }
+        }
+        
         private HashSet<EnemyCharacter> _enemies = new();
     }
 }

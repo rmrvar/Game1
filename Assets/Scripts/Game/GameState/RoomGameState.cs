@@ -12,12 +12,12 @@ using UnityEditor;
 #endif
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using Util.StateMachine;
+using Util.State;
 using Util.TurnSystem;
 
 namespace Game.GameState
 {
-    public class RoomGameState : MonoSingletonState<EGameState, RoomGameState>
+    public class RoomGameState : MonoSingletonState<RoomGameState>
     {
         [SerializeField] 
         private PlayerCharacter _playerPrefab;
@@ -44,12 +44,34 @@ namespace Game.GameState
         [SerializeField] 
         private HealthUi _healthUi;
         
-        public override void OnEnter()
+        public override void OnInit(GraphInstance instance)
         {
+            Debug.Log("RoomGameState OnInit");
+        }
+        
+        public override void OnEnter(GraphInstance instance, Dictionary<string, object> args)
+        {
+            base.OnEnter(instance, args);
             Debug.Log("RoomGameState OnEnter");
-            Room.Instance.SetTilemap(_botTilemap1);
 
-            _camera.transform.position = _camPos1;
+            if (CharacterManager.Instance.Player == null)
+            {
+                _level = 1;
+                _turnManager = new TurnManager<Character.Character>(this);
+                SetBottomTilemap(true);
+                _camera.transform.position = _camPos1;
+                _player = CharacterManager.Instance.SpawnPlayer(_turnManager);
+                _turnManager.AddToken(_player);
+                _healthUi.Health = _player.Health;
+                _playerTasks = new ITurnTask<Character.Character>[]
+                {
+                    new WaitForEnemiesTurnTask(),
+                    new TurnTask(),
+                };
+                
+                _topGate.Lower();
+                _botGate.Lower();
+            }
             
             CharacterManager.Instance.OnEnemyStartedAction +=
                 ((WaitForEnemiesTurnTask)_playerTasks[0]).OnEnemyStartedAction;
@@ -57,21 +79,13 @@ namespace Game.GameState
                 ((WaitForEnemiesTurnTask)_playerTasks[0]).OnEnemyEndedAction;
             CharacterManager.Instance.OnEnemyKilled += OnEnemyKilled;
             CharacterManager.Instance.OnPlayerKilled += OnPlayerKilled;
-
-            _turnManager = new TurnManager<Character.Character>(this);
             _turnManager.OnTurnStarted += OnTurnStarted;
-
-            _player = CharacterManager.Instance.SpawnPlayer(_turnManager);
-            _turnManager.AddToken(_player);
-            
+                
             _turnManager.Run();
-            
-            _healthUi.Health = _player.Health;
         }
 
-        public override void OnExit()
-        {
-            Debug.Log("RoomGameState OnExit");
+        public override void OnExit(GraphInstance instance)
+        {            
             CharacterManager.Instance.OnEnemyStartedAction -=
                 ((WaitForEnemiesTurnTask)_playerTasks[0]).OnEnemyStartedAction;
             CharacterManager.Instance.OnEnemyEndedAction -= 
@@ -79,7 +93,7 @@ namespace Game.GameState
             CharacterManager.Instance.OnEnemyKilled -= OnEnemyKilled;
             CharacterManager.Instance.OnPlayerKilled -= OnPlayerKilled;
             _turnManager.OnTurnStarted -= OnTurnStarted;
-            _turnManager.ClearTokens();
+            
             _turnManager.Stop();
         }
 
@@ -93,11 +107,14 @@ namespace Game.GameState
 
         private void OnPlayerKilled(PlayerCharacter player)
         {
-#if UNITY_EDITOR
-            EditorApplication.isPlaying = false;
-#else
-            Application.Quit();
-#endif
+            CharacterManager.Instance.ClearAll();
+            GameStateManager.Instance.StateMachine.SetState(
+                Constants.GameState.MENU_STATE_KEY,
+                new Dictionary<string, object>()
+                {
+                    { Constants.MenuState.SUBSTATE_ARG_NAME, Constants.MenuState.GAMEOVER_SUBSTATE_KEY }      
+                }
+              );
         }
 
         public int RoomTransitionThresholdY => (int) _topGate.transform.position.y;
@@ -203,12 +220,8 @@ namespace Game.GameState
             }
         }
         
-        private readonly ITurnTask<Character.Character>[] _playerTasks = new ITurnTask<Character.Character>[]
-        {
-            new WaitForEnemiesTurnTask(),
-            new TurnTask(),
-        };
-        private readonly ITurnTask<Character.Character>[] _enemyTasks = new ITurnTask<Character.Character>[]
+        private ITurnTask<Character.Character>[] _playerTasks;
+        private readonly ITurnTask<Character.Character>[] _enemyTasks = 
         {
             new TurnTask(), 
         };

@@ -1,4 +1,5 @@
-using UnityEngine;
+using System.Collections.Generic;
+using Game.Common;
 using Util;
 
 namespace Game
@@ -7,13 +8,15 @@ namespace Game
     
     public class GameManager : MonoSingleton<GameManager>
     {
-        [SerializeField] private EGameState _initialGameState;
-
-        public int NumberOfEnemies { get; set; }
-        
         public void Start()
         {
-            GameStateManager.Instance.SetGameState(_initialGameState);
+            GameStateManager.Instance.StateMachine.SetState(
+                Constants.GameState.MENU_STATE_KEY,
+                new Dictionary<string, object>()
+                {
+                    { Constants.MenuState.SUBSTATE_ARG_NAME, Constants.MenuState.START_SUBSTATE_KEY }
+                }
+              );
         }
     }
 }
