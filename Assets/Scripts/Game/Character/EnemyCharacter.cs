@@ -3,6 +3,7 @@ using System.Threading;
 using Game.Common;
 using Game.Misc;
 using Game.RoomSystem;
+using Game.Treasure;
 using UnityEngine;
 
 namespace Game.Character
@@ -15,6 +16,10 @@ namespace Game.Character
         protected override void Kill()
         {
             CharacterManager.Instance.KillEnemy(this);
+            if (Random.value > 0.5F)
+            {
+                TreasureManager.Instance.SpawnTreasure(RoomEntity.Position);   
+            }
             base.Kill();
         }
         

@@ -5,6 +5,7 @@ using Game.Character;
 using Game.Common;
 using Game.Misc;
 using Game.RoomSystem;
+using Game.Treasure;
 using Game.TurnSystem;
 using Game.Ui;
 #if UNITY_EDITOR
@@ -56,6 +57,7 @@ namespace Game.GameState
 
             if (CharacterManager.Instance.Player == null)
             {
+                TreasureManager.Instance.Reset();
                 _level = 1;
                 _turnManager = new TurnManager<Character.Character>(this);
                 SetBottomTilemap(true);
@@ -135,6 +137,8 @@ namespace Game.GameState
                 () => ++completionCounter)
               );
             yield return new WaitUntil(() => completionCounter == 2);
+            
+            TreasureManager.Instance.ClearTreasures();
             
             if (Room.Instance.Tilemap == _botTilemap1)
             {

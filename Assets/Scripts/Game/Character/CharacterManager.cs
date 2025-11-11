@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Game.RoomSystem;
+using Game.Treasure;
 using UnityEngine;
 using Util;
 using Util.TurnSystem;
@@ -38,22 +39,12 @@ namespace Game.Character
                 Debug.LogError("Cannot spawn enemy! No enemy prefabs assigned!");
                 return null;
             }
-
-            var prefab = _enemyPrefabs[Random.Range(0, _enemyPrefabs.Length)];
-
-            var positionBot = Vector2Int.zero;
-            var positionTop = Vector2Int.zero;
-            do
-            {
-                var p = Random.insideUnitCircle * 3;
-                positionBot.x = Mathf.RoundToInt(p.x);
-                positionBot.y = Mathf.RoundToInt(p.y);
-                positionTop = new Vector2Int(positionBot.x, positionBot.y + 12);
-            // Since Room only knows about the bottom colliders, check there. But the room entities are spawning in the 
-            // top, so check that there.
-            } while (Room.Instance.IsCollisionAt(positionBot) || Room.Instance.GetRoomEntityAt(positionTop)?.OccupiesSpace == true);
             
-            var enemy = Instantiate(prefab, new Vector3(positionTop.x, positionTop.y), Quaternion.identity);
+            var roomEntityPrefab = _enemyPrefabs[Random.Range(0, _enemyPrefabs.Length)]
+                .GetComponent<RoomEntity>();
+
+            var roomEntity = RoomEntityManager.Instance.SpawnRoomEntity(roomEntityPrefab);
+            var enemy = roomEntity.GetComponent<EnemyCharacter>();
             enemy.TurnManager = turnManager;
             _enemies.Add(enemy);
             OnEnemySpawned?.Invoke(enemy);

@@ -8,10 +8,18 @@ namespace Game.RoomSystem
     public class Room : Util.MonoSingleton<Room>
     {
         public Tilemap Tilemap { get; private set; }
+
+        public Vector2Int GetFreePosition()
+        {
+            int count = _validPositions.Count;
+            var index = Random.Range(0, count);
+            return _validPositions[index];
+        }
         
         public void SetTilemap(Tilemap tilemap)
         {
             Tilemap = tilemap;
+            _validPositions = new List<Vector2Int>();
             _blockedPositions = new HashSet<Vector2Int>();
             
             var tileData = new TileData();
@@ -26,10 +34,12 @@ namespace Game.RoomSystem
                     continue;
                 }
 
+                var position2d = new Vector2Int(position.x, position.y);
+                _validPositions.Add(position2d);
                 tile.GetTileData(position, Tilemap, ref tileData);
                 if (tileData.colliderType != Tile.ColliderType.None)
                 {
-                    _blockedPositions.Add(new Vector2Int(position.x, position.y));
+                    _blockedPositions.Add(position2d);
                 }
             }   
         }
@@ -68,6 +78,7 @@ namespace Game.RoomSystem
             return _blockedPositions.Contains(position);
         }
 
+        private List<Vector2Int> _validPositions;
         private HashSet<Vector2Int> _blockedPositions;
         private readonly HashSet<RoomEntity> _roomEntities = new();
     }

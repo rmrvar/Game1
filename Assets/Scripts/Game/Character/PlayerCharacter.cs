@@ -4,6 +4,7 @@ using Game.Common;
 using Game.GameState;
 using Game.Misc;
 using Game.RoomSystem;
+using Game.Treasure;
 using UnityEngine;
 
 namespace Game.Character
@@ -114,7 +115,11 @@ namespace Game.Character
             }
             else
             {
-                RoomEntity.Move(direction, 0.5F);
+                RoomEntity.Move(
+                    direction, 
+                    0.5F,
+                    () => TreasureManager.Instance.TryToLoot(RoomEntity.Position)
+                  );
                 yield return new WaitUntil(() => !RoomEntity.IsMoving);
             }
         }
