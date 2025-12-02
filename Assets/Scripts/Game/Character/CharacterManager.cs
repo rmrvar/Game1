@@ -43,7 +43,11 @@ namespace Game.Character
             var roomEntityPrefab = _enemyPrefabs[Random.Range(0, _enemyPrefabs.Length)]
                 .GetComponent<RoomEntity>();
 
-            var roomEntity = RoomEntityManager.Instance.SpawnRoomEntity(roomEntityPrefab);
+            var roomEntity = RoomEntityManager.Instance.SpawnRoomEntity(
+                roomEntityPrefab, 
+                radius: 3, 
+                ignoreOccupiesSpace: false
+              );
             var enemy = roomEntity.GetComponent<EnemyCharacter>();
             enemy.TurnManager = turnManager;
             _enemies.Add(enemy);
@@ -76,6 +80,6 @@ namespace Game.Character
             }
         }
         
-        private HashSet<EnemyCharacter> _enemies = new();
+        private readonly HashSet<EnemyCharacter> _enemies = new();
     }
 }

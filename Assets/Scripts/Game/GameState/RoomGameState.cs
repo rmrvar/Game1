@@ -193,7 +193,8 @@ namespace Game.GameState
         private void SpawnEnemies()
         {
             var enemies = new List<EnemyCharacter>();
-            for (int i = 0; i < GetNumOfEnemies(); ++i)
+            var numEnemies = GetNumOfEnemies();
+            for (int i = 0; i < numEnemies; ++i)
             {
                 var enemy = CharacterManager.Instance.SpawnEnemy(_turnManager);
                 enemies.Add(enemy);    
