@@ -129,12 +129,12 @@ namespace Game.GameState
             
             // Play animations.
             int completionCounter = 0;
-            _player.RoomEntity.Move(EDirection.UP, 0.5F, () => ++completionCounter);   
+            _player.RoomEntity.Move(EDirection.UP, 0.5F, (_) => ++completionCounter);   
             StartCoroutine(LerpAnimation.IE_MoveTo(
                 _camera.transform, 
                 _camPos2, 
                 0.35F, 
-                () => ++completionCounter)
+                (_) => ++completionCounter)
               );
             yield return new WaitUntil(() => completionCounter == 2);
             
@@ -161,6 +161,9 @@ namespace Game.GameState
             
             // This is usually calculated when the turns end (which was in the top room).
             Dijkstra.SetDestination(_player.RoomEntity.Position);
+            
+            // Reset player delta time so they don't teleport.
+            PlayerInput.Instance.SetDeltaTimeForMove(0);
             
             _turnManager.Stop();
             _turnManager.Run();

@@ -11,7 +11,7 @@ namespace Game.Misc
             Transform transform,
             Vector3 to,
             float duration = 0,
-            Action onCompleted = null,
+            Action<float> onCompleted = null,
             CancellationToken cancellationToken = default
           )
         {
@@ -32,7 +32,7 @@ namespace Game.Misc
             }
 
             transform.position = to;  // Fixes potential rounding errors.
-            onCompleted?.Invoke();
+            onCompleted?.Invoke(elapsedTime - duration);
         }
     }
 }

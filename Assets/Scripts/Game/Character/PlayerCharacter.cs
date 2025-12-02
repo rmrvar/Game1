@@ -19,6 +19,23 @@ namespace Game.Character
             CharacterManager.Instance.KillPlayer();
             base.Kill();
         }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            CharacterManager.Instance.OnEnemyEndedAction += OnEnemyEndedAction;
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+            CharacterManager.Instance.OnEnemyEndedAction -= OnEnemyEndedAction;
+        }
+
+        private void OnEnemyEndedAction(EnemyCharacter enemy)
+        {
+            PlayerInput.Instance.SetDeltaTimeForMove(0);
+        }
         
         public override IEnumerator IE_ExecuteTurn(CancellationToken token)
         {
@@ -27,8 +44,8 @@ namespace Game.Character
                 Debug.LogError("Called PlayerCharacter.IE_ExecuteTurn while already in progress!");
                 yield break;
             }
-            
             _isBusy = true;
+            
             for (int i = 0; i < _numPhases; ++i)
             {
                 yield return IE_ExecutePhase();
@@ -46,12 +63,16 @@ namespace Game.Character
         {
             while (true)
             {
-                if (PollForMove(out var direction) && RoomEntity.CanMove(direction.Value))
+                if (PlayerInput.Instance.PollForMove(out var direction) && RoomEntity.CanMove(direction.Value))
                 {
                     yield return IE_HandleMove(direction.Value);
                     yield break;
                 }
-                if (PollForAttack())
+
+                // Player chose to not do anything, so reset deltas.
+                PlayerInput.Instance.SetDeltaTimeForMove(0);
+                
+                if (PlayerInput.Instance.PollForAttack())
                 {
                     bool isCancelled = true; 
                     yield return IE_HandleAttack(() => isCancelled = false);
@@ -73,12 +94,12 @@ namespace Game.Character
             
             while (true)
             {
-                if (PollForMove(out var direction))
+                if (PlayerInput.Instance.PollForMove(out var direction))
                 {
                     RoomEntity.Face(direction.Value);
                     ShowAttackIndicators();
                 }
-                if (PollForAttack())  // Confirm the attack
+                if (PlayerInput.Instance.PollForAttack())  // Confirm the attack
                 {
                     foreach (var attackIndicator in AttackIndicators)
                     {
@@ -115,40 +136,19 @@ namespace Game.Character
             }
             else
             {
+                var unusedDeltaTime = PlayerInput.Instance.GetDeltaTimeForMove();
+                RoomEntity.transform.position += direction.ToVector3() * (unusedDeltaTime / 1.0F);
                 RoomEntity.Move(
                     direction, 
-                    0.5F,
-                    () => TreasureManager.Instance.TryToLoot(RoomEntity.Position)
+                    0.5F - unusedDeltaTime,
+                    unusedDeltaTime =>
+                    {
+                        PlayerInput.Instance.SetDeltaTimeForMove(unusedDeltaTime);
+                        TreasureManager.Instance.TryToLoot(RoomEntity.Position);
+                    }
                   );
                 yield return new WaitUntil(() => !RoomEntity.IsMoving);
             }
-        }
-        
-        private bool PollForAttack()
-        {
-            return Input.GetButtonDown("Jump");
-        }
-
-        private bool PollForMove(out EDirection? direction)
-        {
-            Vector2Int move;
-            var horz = Mathf.RoundToInt(Input.GetAxisRaw("Horizontal"));
-            var vert = Mathf.RoundToInt(Input.GetAxisRaw("Vertical"));
-            if (horz != 0)
-            {
-                move = new Vector2Int(horz, 0);
-            } else 
-            if (vert != 0)
-            {
-                move = new Vector2Int(0, vert);
-            }
-            else
-            {
-                direction = null;
-                return false;
-            }
-            direction = move.ToEDirection();
-            return true;
         }
         
         private bool _isBusy;

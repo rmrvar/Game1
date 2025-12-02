@@ -88,7 +88,7 @@ namespace Game.RoomSystem
         public bool Move(
             EDirection direction, 
             float duration = 0.0F, 
-            System.Action onCompleted = null,
+            System.Action<float> onCompleted = null,
             CancellationToken cancellationToken = default
           )
         {
@@ -108,8 +108,9 @@ namespace Game.RoomSystem
             {
                 StopCoroutine(_moveCoroutine);
                 _moveCoroutine = null;
+                // TODO: We allow mid-move stuff for PlayerInput.
                 // Snap position to the grid if movement interrupted (shouldn't happen).
-                transform.position = new Vector3(Position.x, Position.y);  
+                // transform.position = new Vector3(Position.x, Position.y);  
             }
 
             IsMoving = true;
@@ -117,12 +118,12 @@ namespace Game.RoomSystem
                 transform,
                 new Vector3(position2.x, position2.y, transform.position.z),
                 duration,
-                () =>
+                leftOverDeltaTime =>
                 {
                     IsMoving = false;
                     transform.position = new Vector3(_position.x, _position.y, transform.position.z);  // Fixes potential rounding errors.
                     _moveCoroutine = null;  // Call before onCompleted(). Otherwise, cannot cancel new coroutine if Move is called from there.
-                    onCompleted?.Invoke();
+                    onCompleted?.Invoke(leftOverDeltaTime);
                 },
                 cancellationToken
               ));

@@ -10,6 +10,10 @@ namespace Game.TurnSystem
     {
         public IEnumerator IE_Execute(TurnContext<Character.Character> context, CancellationToken token)
         {
+            if (_count <= 0)
+            {
+                yield break;
+            }
             yield return new WaitUntil(() => _count <= 0);
             _count = 0;
         }

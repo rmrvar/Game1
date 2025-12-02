@@ -133,7 +133,7 @@ namespace Util.TurnSystem
                     {
                         OnRoundEnded?.Invoke(context);
                         // Minimally invasive way to prevent hanging if every task immediately completes for some reason.
-                        yield return null;
+                        // yield return null;
                     }
                 }
             }

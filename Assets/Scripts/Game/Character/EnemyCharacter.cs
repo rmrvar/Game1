@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Threading;
 using Game.Common;
-using Game.Misc;
 using Game.RoomSystem;
 using Game.Treasure;
 using UnityEngine;
@@ -79,7 +78,7 @@ namespace Game.Character
             if (!RoomEntity.Move(
                 direction.Value,
                 0.5F,
-                onCompleted: () => CharacterManager.Instance.OnEnemyEndedAction?.Invoke(this)
+                onCompleted: (_) => CharacterManager.Instance.OnEnemyEndedAction?.Invoke(this)
               ))
             {
                 CharacterManager.Instance.OnEnemyEndedAction?.Invoke(this);

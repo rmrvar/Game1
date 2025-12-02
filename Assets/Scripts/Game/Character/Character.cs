@@ -54,12 +54,12 @@ namespace Game.Character
             }
         }
 
-        private void OnEnable()
+        protected virtual void OnEnable()
         {
             Health.OnDied += Kill;
         }
 
-        private void OnDisable()
+        protected virtual void OnDisable()
         {
             Health.OnDied -= Kill;
             HideAttackIndicators();
