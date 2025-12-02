@@ -14,26 +14,6 @@ namespace Game.Treasure
         [SerializeField]
         private TreasureUi _treasureUi;
         
-        public RoomEntity SpawnTreasure()
-        {
-            if (_treasurePrefabs.Length == 0)
-            {
-                Debug.LogError("Cannot spawn treasure! No treasure prefab assigned!");
-                return null;
-            }
-            
-            var treasurePrefab = _treasurePrefabs[Random.Range(0, _treasurePrefabs.Length)]
-                .GetComponent<RoomEntity>();
-
-            var roomEntity = RoomEntityManager.Instance.SpawnRoomEntity(
-                treasurePrefab,
-                3,
-                false
-              );
-            _treasures.Add(roomEntity);
-            return roomEntity;
-        }
-
         public RoomEntity SpawnTreasure(Vector2Int position)
         {            
             if (_treasurePrefabs.Length == 0)

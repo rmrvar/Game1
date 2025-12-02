@@ -35,10 +35,10 @@ namespace Game.Character
                 }
                 foreach (var attackIndicator in AttackIndicators)
                 {
-                    var roomEntity = Room.Instance.GetRoomEntityAt(
+                    var roomEntities = Room.Instance.GetRoomEntitiesAt(
                         new Vector2Int((int) attackIndicator.position.x, (int) attackIndicator.position.y)
-                    );
-                    if (roomEntity != null)
+                      );
+                    foreach (var roomEntity in roomEntities)
                     {
                         var player = roomEntity.GetComponent<PlayerCharacter>();
                         if (player != null)

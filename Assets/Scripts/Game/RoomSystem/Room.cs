@@ -60,17 +60,20 @@ namespace Game.RoomSystem
             {
                 return false;
             }
-            var roomEntity = GetRoomEntityAt(position);
-            if (roomEntity != null && roomEntity.OccupiesSpace)
+            var roomEntities = GetRoomEntitiesAt(position);
+            foreach (var roomEntity in roomEntities)
             {
-                return false;
+                if (roomEntity != null && roomEntity.OccupiesSpace)
+                {
+                    return false;
+                }
             }
             return true;
         }
 
-        public RoomEntity GetRoomEntityAt(Vector2Int position)
+        public List<RoomEntity> GetRoomEntitiesAt(Vector2Int position)
         {
-            return _roomEntities.FirstOrDefault(entity => entity.Position == position);
+            return _roomEntities.Where(entity => entity.Position == position).ToList();
         }
 
         public bool IsCollisionAt(Vector2Int position)

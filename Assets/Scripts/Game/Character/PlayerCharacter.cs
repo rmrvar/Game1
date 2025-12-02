@@ -2,7 +2,6 @@ using System.Collections;
 using System.Threading;
 using Game.Common;
 using Game.GameState;
-using Game.Misc;
 using Game.RoomSystem;
 using Game.Treasure;
 using UnityEngine;
@@ -103,10 +102,10 @@ namespace Game.Character
                 {
                     foreach (var attackIndicator in AttackIndicators)
                     {
-                        var roomEntity = Room.Instance.GetRoomEntityAt(
+                        var roomEntities = Room.Instance.GetRoomEntitiesAt(
                             new Vector2Int((int) attackIndicator.position.x, (int) attackIndicator.position.y)
                           );
-                        if (roomEntity != null)
+                        foreach (var roomEntity in roomEntities)
                         {
                             var health = roomEntity.GetComponent<Health>();
                             if (health != null)

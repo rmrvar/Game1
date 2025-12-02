@@ -1,10 +1,10 @@
+using System.Linq;
 using Game.RoomSystem;
 using UnityEngine;
 using Util;
 
 namespace Game.Treasure
 {
-    // TODO: Make nicer
     public class RoomEntityManager : MonoSingleton<RoomEntityManager>
     {
         public RoomEntity SpawnRoomEntity(RoomEntity roomEntityPrefab, Vector2Int position)
@@ -17,6 +17,7 @@ namespace Game.Treasure
             return roomEntity;
         }
         
+        // TODO: Make nicer.
         public RoomEntity SpawnRoomEntity(RoomEntity roomEntityPrefab, float radius = 3, bool ignoreOccupiesSpace = true)
         {   
             var positionBot = Vector2Int.zero;
@@ -33,9 +34,16 @@ namespace Game.Treasure
                 {
                     continue;
                 }
-                if (!ignoreOccupiesSpace && Room.Instance.GetRoomEntityAt(positionTop)?.OccupiesSpace == true)
+
+                if (ignoreOccupiesSpace)
                 {
-                    continue;
+                    var shouldSkip = Room.Instance.GetRoomEntitiesAt(positionTop).Any(roomEntity => 
+                        roomEntity != null && roomEntity.OccupiesSpace
+                    );
+                    if (shouldSkip)
+                    {
+                        continue;
+                    }
                 }
                 break;
             }
