@@ -35,7 +35,7 @@ namespace Game.Treasure
                     continue;
                 }
 
-                if (ignoreOccupiesSpace)
+                if (!ignoreOccupiesSpace)
                 {
                     var shouldSkip = Room.Instance.GetRoomEntitiesAt(positionTop).Any(roomEntity => 
                         roomEntity != null && roomEntity.OccupiesSpace
@@ -49,6 +49,6 @@ namespace Game.Treasure
             }
 
             return SpawnRoomEntity(roomEntityPrefab, positionTop);
-        }    
+        }
     }
 }
