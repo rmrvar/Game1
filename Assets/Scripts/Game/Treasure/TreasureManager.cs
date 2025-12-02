@@ -53,26 +53,17 @@ namespace Game.Treasure
             return roomEntity;
         }
         
-        //
-        // public void DespawnTreasure(RoomEntity treasure)
-        // {
-        //     _treasures.Remove(treasure);
-        //     Destroy(treasure.gameObject);
-        // }
-        //
-        // public RoomEntity GetTreasure(Vector2Int position)
-        // {
-        //     return _treasures.FirstOrDefault(roomEntity => roomEntity.Position == position);
-        // }
         public void TryToLoot(Vector2Int position)
         {
-            var treasure = _treasures.FirstOrDefault(roomEntity => roomEntity.Position == position);
-            if (treasure == null)
+            var treasures = _treasures.Where(roomEntity => roomEntity.Position == position);
+            int treasureCount = 0;
+            foreach (var treasure in treasures)
             {
-                return;
+                Destroy(treasure.gameObject);
+                ++treasureCount;
             }
-            Destroy(treasure.gameObject);
-            _treasureUi.SetTreasureCount(++_treasureCount);
+            _treasureCount += treasureCount;
+            _treasureUi.SetTreasureCount(_treasureCount);
         }
 
         public void Reset()
