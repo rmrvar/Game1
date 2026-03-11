@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Threading;
+using Game.Animation;
 using Game.Common;
 using Game.GameState;
 using Game.RoomSystem;
@@ -102,20 +103,28 @@ namespace Game.Character
                 {
                     foreach (var attackIndicator in AttackIndicators)
                     {
-                        var roomEntities = Room.Instance.GetRoomEntitiesAt(
-                            new Vector2Int((int) attackIndicator.position.x, (int) attackIndicator.position.y)
-                          );
-                        foreach (var roomEntity in roomEntities)
-                        {
-                            var health = roomEntity.GetComponent<Health>();
-                            if (health != null)
+                        var position = new Vector2Int((int)attackIndicator.position.x, (int)attackIndicator.position.y);
+                        AnimationManager.Instance.PlayAttackAnimation(
+                            AttackAnimationPrefab, 
+                            position,
+                            () =>
                             {
-                                health.Hurt(1);
+                                var roomEntities = Room.Instance.GetRoomEntitiesAt(position);
+                                foreach (var roomEntity in roomEntities)
+                                {
+                                    var health = roomEntity.GetComponent<Health>();
+                                    if (health != null)
+                                    {
+                                        health.Hurt(1);
+                                    }
+                                }
                             }
-                        }
+                          );
                     }
-                    onComplete?.Invoke();
                     HideAttackIndicators();
+                    yield return new WaitUntil(() => AnimationManager.Instance.RunningAttackAnimationCount <= 0);
+                    
+                    onComplete?.Invoke();
                     yield break;
                 }
                 if (Input.GetKeyDown(KeyCode.Escape))

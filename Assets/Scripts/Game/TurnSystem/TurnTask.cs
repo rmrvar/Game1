@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Threading;
-using Game.Character;
 using Util.TurnSystem;
 
 namespace Game.TurnSystem

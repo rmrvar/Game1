@@ -65,6 +65,7 @@ namespace Game.GameState
                 _player = CharacterManager.Instance.SpawnPlayer(_turnManager);
                 _turnManager.AddToken(_player);
                 _healthUi.Health = _player.Health;
+                // var waitForAttackAnimationsTask = new WaitForAttackAnimationsTask();
                 _playerTasks = new ITurnTask<Character.Character>[]
                 {
                     new WaitForEnemiesTurnTask(),
@@ -103,7 +104,7 @@ namespace Game.GameState
         {
             if (!CharacterManager.Instance.Enemies.Any())
             {
-                _topGate.Lower();   
+                _topGate.Lower();
             }
         }
 

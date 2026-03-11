@@ -138,6 +138,7 @@ MonoBehaviour:
   <Health>k__BackingField: {fileID: -2067013240789435514}
   _attackIndicatorPrefab: {fileID: 476618208001510625, guid: a87bbb0985b9ae04591b7394899cf257, type: 3}
   _attackIndicatorPattern: {fileID: 11400000, guid: c785909f1492f4c449499ef82c7de553, type: 2}
+  AttackAnimationPrefab: {fileID: 5940435219302660748, guid: 9a0a5daa0199340488c123f60c2e3994, type: 3}
   _attackWindupTime: 1
 --- !u!114 &1880617126002437195
 MonoBehaviour:

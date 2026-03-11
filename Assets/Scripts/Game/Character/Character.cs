@@ -5,6 +5,7 @@ using Game.Indicator;
 using Game.Misc;
 using Game.RoomSystem;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Util.TurnSystem;
 
 namespace Game.Character
@@ -21,6 +22,8 @@ namespace Game.Character
         private Transform _attackIndicatorPrefab;
         [SerializeField]
         private IndicatorPattern _attackIndicatorPattern;
+        [SerializeField]
+        protected Transform AttackAnimationPrefab;
         
         public abstract IEnumerator IE_ExecuteTurn(CancellationToken token);
         

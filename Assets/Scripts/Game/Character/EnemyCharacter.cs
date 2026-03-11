@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Threading;
+using Game.Animation;
 using Game.Common;
 using Game.RoomSystem;
 using Game.Treasure;
@@ -33,24 +34,32 @@ namespace Game.Character
                 {
                     yield break;   
                 }
+
                 foreach (var attackIndicator in AttackIndicators)
                 {
-                    var roomEntities = Room.Instance.GetRoomEntitiesAt(
-                        new Vector2Int((int) attackIndicator.position.x, (int) attackIndicator.position.y)
-                      );
-                    foreach (var roomEntity in roomEntities)
-                    {
-                        var player = roomEntity.GetComponent<PlayerCharacter>();
-                        if (player != null)
+                    var position = new Vector2Int((int)attackIndicator.position.x, (int)attackIndicator.position.y);
+                    AnimationManager.Instance.PlayAttackAnimation(
+                        AttackAnimationPrefab,
+                        position,
+                        () =>
                         {
-                            player.Health.Hurt(1);
+                            var roomEntities = Room.Instance.GetRoomEntitiesAt(position);
+                            foreach (var roomEntity in roomEntities)
+                            {
+                                var player = roomEntity.GetComponent<PlayerCharacter>();
+                                if (player != null)
+                                {
+                                    // TODO: Problem killing player mid-turn.
+                                    player.Health.Hurt(1);
+                                }
+                            }
+                            CharacterManager.Instance.OnEnemyEndedAction?.Invoke(this);
                         }
-                    }
+                      );
                 }
                 HideAttackIndicators();
                 _isWindingUp = false;
                 _windupCounter = 0;
-                CharacterManager.Instance.OnEnemyEndedAction?.Invoke(this);
                 yield break;
             }
             var playerPos = CharacterManager.Instance.Player.RoomEntity.Position;
@@ -70,19 +79,17 @@ namespace Game.Character
         private IEnumerator IE_Pathfind()
         {
             var direction = Dijkstra.GetDirection(RoomEntity.Position);
-            if (direction == null)
+            if (direction == null || !RoomEntity.CanMove(direction.Value))
             {
                 CharacterManager.Instance.OnEnemyEndedAction?.Invoke(this);
                 yield break;  // Enemy is stuck.
             }
-            if (!RoomEntity.Move(
+            AnimationManager.Instance.PlayMoveAnimation(
+                RoomEntity,
                 direction.Value,
                 0.5F,
                 onCompleted: (_) => CharacterManager.Instance.OnEnemyEndedAction?.Invoke(this)
-              ))
-            {
-                CharacterManager.Instance.OnEnemyEndedAction?.Invoke(this);
-            }
+              );
         }
 
         private IEnumerator IE_Attack()
