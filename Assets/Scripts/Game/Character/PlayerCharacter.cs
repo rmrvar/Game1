@@ -1,10 +1,12 @@
 using System.Collections;
+using System.Linq;
 using System.Threading;
 using Game.Animation;
 using Game.Common;
 using Game.GameState;
 using Game.RoomSystem;
 using Game.Treasure;
+using Game.Ui;
 using UnityEngine;
 
 namespace Game.Character
@@ -13,7 +15,7 @@ namespace Game.Character
     {
         [SerializeField]
         private int _numPhases = 1;
-        
+
         protected override void Kill()
         {
             CharacterManager.Instance.KillPlayer();
@@ -24,6 +26,9 @@ namespace Game.Character
         {
             base.OnEnable();
             CharacterManager.Instance.OnEnemyEndedAction += OnEnemyEndedAction;
+
+            _enemyHealthHUD =
+                (EnemyHealthHUD) FindFirstObjectByType(typeof(EnemyHealthHUD), FindObjectsInactive.Include);
         }
 
         protected override void OnDisable()
@@ -91,6 +96,7 @@ namespace Game.Character
             yield return null;  // Wait a frame
 
             ShowAttackIndicators();
+            ShowEnemyHealthHUD();
             
             while (true)
             {
@@ -98,6 +104,7 @@ namespace Game.Character
                 {
                     RoomEntity.Face(direction.Value);
                     ShowAttackIndicators();
+                    ShowEnemyHealthHUD();
                 }
                 if (PlayerInput.Instance.PollForAttack())  // Confirm the attack
                 {
@@ -122,6 +129,7 @@ namespace Game.Character
                           );
                     }
                     HideAttackIndicators();
+                    HideEnemyHealthHUD();
                     yield return new WaitUntil(() => AnimationManager.Instance.RunningAttackAnimationCount <= 0);
                     
                     onComplete?.Invoke();
@@ -130,6 +138,7 @@ namespace Game.Character
                 if (Input.GetKeyDown(KeyCode.Escape))
                 {
                     HideAttackIndicators();
+                    HideEnemyHealthHUD();
                     yield break;
                 }
                 yield return null;
@@ -158,7 +167,33 @@ namespace Game.Character
                 yield return new WaitUntil(() => !RoomEntity.IsMoving);
             }
         }
+
+        private void ShowEnemyHealthHUD()
+        {
+            var indicator = AttackIndicators.First();
+            var position = new Vector2Int((int)indicator.position.x, (int)indicator.position.y);
+            var roomEntities = Room.Instance.GetRoomEntitiesAt(position);
+            foreach (var roomEntity in roomEntities)
+            {
+                var health = roomEntity.GetComponent<Health>();
+                if (health != null)
+                {
+                    _enemyHealthHUD.gameObject.SetActive(true);
+                    _enemyHealthHUD.Show(health.NumHearts);
+                    _enemyHealthHUD.transform.position = roomEntity.transform.position;
+                    return;
+                }
+            }
+            _enemyHealthHUD.gameObject.SetActive(false);
+        }
+        
+        private void HideEnemyHealthHUD()
+        {
+            _enemyHealthHUD.gameObject.SetActive(false);
+        }
         
         private bool _isBusy;
+        [SerializeField]
+        private EnemyHealthHUD _enemyHealthHUD;
     }
 }
