@@ -24,6 +24,11 @@ namespace Game.Character
         private IndicatorPattern _attackIndicatorPattern;
         [SerializeField]
         protected Transform AttackAnimationPrefab;
+
+        [SerializeField]
+        private Sprite _spriteIdle;
+        [SerializeField]
+        private Sprite _spriteAttack;
         
         public abstract IEnumerator IE_ExecuteTurn(CancellationToken token);
         
@@ -46,6 +51,7 @@ namespace Game.Character
                 RoomEntity.Position, 
                 RoomEntity.Direction
             );
+            GetComponentInChildren<SpriteRenderer>().sprite = _spriteAttack;
         }
 
         protected void HideAttackIndicators()
@@ -55,6 +61,7 @@ namespace Game.Character
                 IndicatorManager.Instance.ReleaseIndicators(AttackIndicators);
                 AttackIndicators = null;
             }
+            GetComponentInChildren<SpriteRenderer>().sprite = _spriteIdle;
         }
 
         protected virtual void OnEnable()

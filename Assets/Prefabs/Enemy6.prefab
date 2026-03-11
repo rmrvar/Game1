@@ -139,6 +139,8 @@ MonoBehaviour:
   _attackIndicatorPrefab: {fileID: 476618208001510625, guid: a87bbb0985b9ae04591b7394899cf257, type: 3}
   _attackIndicatorPattern: {fileID: 11400000, guid: f1b82997e1a68ed429247596a498a990, type: 2}
   AttackAnimationPrefab: {fileID: 5940435219302660748, guid: 9a0a5daa0199340488c123f60c2e3994, type: 3}
+  _spriteIdle: {fileID: -980448530176449360, guid: 0b902a60ff1c0ba4abefb0e04850641a, type: 3}
+  _spriteAttack: {fileID: 21300000, guid: 824bc67caab7db04184bc56b592c411c, type: 3}
   _attackWindupTime: 1
 --- !u!114 &1880617126002437195
 MonoBehaviour:
