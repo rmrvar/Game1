@@ -44,6 +44,11 @@ namespace Game.GameState
 
         [SerializeField] 
         private HealthUi _healthUi;
+
+        [SerializeField]
+        private EnemyCharacter _tutorialEnemy;
+        [SerializeField]
+        private EnemyCharacter _tutorialDamsel;
         
         public override void OnInit(GraphInstance instance)
         {
@@ -58,7 +63,7 @@ namespace Game.GameState
             if (CharacterManager.Instance.Player == null)
             {
                 TreasureManager.Instance.Reset();
-                _level = 1;
+                _level = 0;
                 _turnManager = new TurnManager<Character.Character>(this);
                 SetBottomTilemap(true);
                 _camera.transform.position = _camPos1;
@@ -110,6 +115,10 @@ namespace Game.GameState
 
         private void OnPlayerKilled(PlayerCharacter player)
         {
+            if (!PlayerPrefs.HasKey("HasDoneTutorialRoom"))
+            {  // Died during the tutorial. Reset.
+                _hasSeenTutorialRoom = false;
+            }
             CharacterManager.Instance.ClearAll();
             GameStateManager.Instance.StateMachine.SetState(
                 Constants.GameState.MENU_STATE_KEY,
@@ -125,8 +134,29 @@ namespace Game.GameState
         public IEnumerator IE_DoRoomTransition()
         {
             ++_level;
+
+            // PlayerPrefs.DeleteKey("HasDoneTutorialRoom");
             
-            SpawnEnemies();
+            if (_hasSeenTutorialRoom && !PlayerPrefs.HasKey("HasDoneTutorialRoom"))
+            {
+                PlayerPrefs.SetInt("HasDoneTutorialRoom", 1);
+            }
+            
+            if (!PlayerPrefs.HasKey("HasDoneTutorialRoom"))
+            {
+                var tutorialEnemy =
+                    CharacterManager.Instance.SpawnEnemyAt(_turnManager, _tutorialEnemy, new Vector2Int(0, 4 + 12));
+                var tutorialDamsel = 
+                    CharacterManager.Instance.SpawnEnemyAt(_turnManager, _tutorialDamsel, new Vector2Int(0, 3 + 12));
+                _turnManager.AddToken(tutorialEnemy);
+                _turnManager.AddToken(tutorialDamsel);
+                _hasSeenTutorialRoom = true;
+                _level = 0;  // The level after the tutorial should have number of enemies matching level 1.
+            }
+            else
+            {
+                SpawnEnemies();   
+            }
             
             // Play animations.
             int completionCounter = 0;
@@ -175,19 +205,20 @@ namespace Game.GameState
             switch (_level)
             {
                 case 1:
+                    return 1;
                 case 2: 
-                    return Random.Range(4, 5);
+                    return 2;
                 case 3: 
                 case 4: 
-                    return Random.Range(5, 6);
+                    return 3;
                 case 5: 
                 case 6: 
-                    return Random.Range(7, 8);
+                    return 4;
                 case 7: 
                 case 8: 
-                    return Random.Range(9, 10);
+                    return 5;
                 default: 
-                    return Random.Range(11, 15);
+                    return Random.Range(6, 8);
             }
         }
         
@@ -238,5 +269,6 @@ namespace Game.GameState
         private TurnManager<Character.Character> _turnManager;
         private PlayerCharacter _player;
         private int _level;
+        private bool _hasSeenTutorialRoom;
     }
 }

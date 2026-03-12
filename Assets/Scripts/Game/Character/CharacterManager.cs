@@ -55,6 +55,25 @@ namespace Game.Character
             return enemy;
         }
 
+        public EnemyCharacter SpawnEnemyAt(
+            TurnManager<Character> turnManager, 
+            EnemyCharacter enemyPrefab, 
+            Vector2Int position
+          )
+        {
+            var roomEntityPrefab = enemyPrefab.GetComponent<RoomEntity>();
+
+            var roomEntity = RoomEntityManager.Instance.SpawnRoomEntity(
+                roomEntityPrefab,
+                position
+            );
+            var enemy = roomEntity.GetComponent<EnemyCharacter>();
+            enemy.TurnManager = turnManager;
+            _enemies.Add(enemy);
+            OnEnemySpawned?.Invoke(enemy);
+            return enemy;
+        }
+
         public void KillEnemy(EnemyCharacter enemy)
         {
             _enemies.Remove(enemy);

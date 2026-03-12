@@ -49,7 +49,6 @@ namespace Game.Character
                                 var player = roomEntity.GetComponent<PlayerCharacter>();
                                 if (player != null)
                                 {
-                                    // TODO: Problem killing player mid-turn.
                                     player.Health.Hurt(1);
                                 }
                             }
