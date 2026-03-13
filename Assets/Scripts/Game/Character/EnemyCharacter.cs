@@ -12,11 +12,14 @@ namespace Game.Character
     {
         [SerializeField] 
         private int _attackWindupTime = 1;
+
+        [SerializeField]
+        private float _lootDropChance = 0.5F;
         
         protected override void Kill()
         {
             CharacterManager.Instance.KillEnemy(this);
-            if (Random.value > 0.5F)
+            if (Random.value > (1 - _lootDropChance))
             {
                 TreasureManager.Instance.SpawnTreasure(RoomEntity.Position);   
             }

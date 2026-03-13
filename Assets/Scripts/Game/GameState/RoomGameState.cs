@@ -49,6 +49,9 @@ namespace Game.GameState
         private EnemyCharacter _tutorialEnemy;
         [SerializeField]
         private EnemyCharacter _tutorialDamsel;
+
+        [SerializeField]
+        private bool _shouldPlayTutorial;
         
         public override void OnInit(GraphInstance instance)
         {
@@ -135,7 +138,10 @@ namespace Game.GameState
         {
             ++_level;
 
-            // PlayerPrefs.DeleteKey("HasDoneTutorialRoom");
+            if (_shouldPlayTutorial && !_hasSeenTutorialRoom)
+            {
+                PlayerPrefs.DeleteKey("HasDoneTutorialRoom");
+            }
             
             if (_hasSeenTutorialRoom && !PlayerPrefs.HasKey("HasDoneTutorialRoom"))
             {

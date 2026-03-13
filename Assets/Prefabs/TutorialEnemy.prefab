@@ -142,6 +142,7 @@ MonoBehaviour:
   _spriteIdle: {fileID: 2473412114008512737, guid: 0b902a60ff1c0ba4abefb0e04850641a, type: 3}
   _spriteAttack: {fileID: 21300000, guid: 7025f7f0942d4494ab951e47ee45d125, type: 3}
   _attackWindupTime: 1
+  _lootDropChance: 1
   _isDamsel: 0
 --- !u!114 &1880617126002437195
 MonoBehaviour:

@@ -1,9 +1,9 @@
 using Game.Common;
 using Game.GameState;
-using UnityEditor;
 #if UNITY_EDITOR
-using UnityEngine;
+using UnityEditor;
 #endif
+using UnityEngine;
 
 namespace Game.Ui
 {

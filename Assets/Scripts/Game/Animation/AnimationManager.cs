@@ -48,7 +48,7 @@ namespace Game.Animation
             //     animator.GetCurrentAnimatorStateInfo(0).IsName("IsAttacking"));
 
             yield return new WaitUntil(() =>
-                animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.99F);
+                animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.95F);  // Hack (instead of 1)
             
             onAnimationFinished?.Invoke();
             --RunningAttackAnimationCount;

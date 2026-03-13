@@ -4063,6 +4063,7 @@ MonoBehaviour:
   _healthUi: {fileID: 383080010}
   _tutorialEnemy: {fileID: 5696316304580001525, guid: cd03487b4473db547b629b23f900013e, type: 3}
   _tutorialDamsel: {fileID: 5696316304580001525, guid: 6d251385497169345be91feb43cacb82, type: 3}
+  _shouldPlayTutorial: 0
 --- !u!4 &1475498881
 Transform:
   m_ObjectHideFlags: 0
