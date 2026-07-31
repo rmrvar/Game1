@@ -43,13 +43,18 @@ namespace Game.Animation
             ++RunningAttackAnimationCount;
             animator.SetTrigger("Attack");
 
-            yield return null;
-            // yield return new WaitUntil(() =>
-            //     animator.GetCurrentAnimatorStateInfo(0).IsName("IsAttacking"));
+            // Wait until in attack animation state.
+            while (!animator.GetCurrentAnimatorStateInfo(0).IsName("AttackAnimation"))
+            {
+                yield return null;
+            }
 
-            yield return new WaitUntil(() =>
-                animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.95F);  // Hack (instead of 1)
-            
+            // Wait until out of attack animation state again.
+            while (animator.GetCurrentAnimatorStateInfo(0).IsName("AttackAnimation"))
+            {
+                yield return null;
+            }
+
             onAnimationFinished?.Invoke();
             --RunningAttackAnimationCount;
         }
