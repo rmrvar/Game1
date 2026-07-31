@@ -28,7 +28,10 @@ namespace Game.Misc
                 elapsedTime += Time.deltaTime;
                 transform.position += fromTo * (Time.deltaTime / duration);
 
-                yield return null;
+                if (elapsedTime < duration)
+                {
+                    yield return null;  // Don't want to wait a frame if we're done (causes one frame of unclamped final position otherwise).
+                }
             }
 
             transform.position = to;  // Fixes potential rounding errors.
